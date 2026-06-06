@@ -43,8 +43,10 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
     # Auto-ingest resumes from the "resume" folder at the root of the workspace
     from pathlib import Path
-    workspace_root = Path(__file__).resolve().parents[2]
-    resume_dir = workspace_root / "assets" / "resume"
+    # In Docker: /app/app/main.py → parents[1] = /app (the backend root)
+    # Locally: backend/app/main.py → parents[1] = backend/
+    backend_root = Path(__file__).resolve().parents[1]
+    resume_dir = backend_root / "assets" / "resume"
     if resume_dir.exists() and resume_dir.is_dir():
         from app.services.chunking_service import ChunkingService
         from app.services.embedding_service import EmbeddingService
