@@ -96,16 +96,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.limiter = limiter
 
     app.add_middleware(SlowAPIMiddleware)
-    # Parse CORS origins from env var (comma-separated) and always include known origins
-    cors_origins_from_env = [o.strip() for o in active_settings.cors_origins.split(",") if o.strip()]
-    allowed_origins = list(set(cors_origins_from_env + [
-        "http://localhost:3000",
-        "https://acash-ai-interview-assistant.vercel.app",
-    ]))
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=allowed_origins,
-        allow_credentials=True,
+        allow_origins=["*"],
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
