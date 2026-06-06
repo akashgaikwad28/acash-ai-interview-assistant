@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Next.js / Frontend
+.next/
+out/
+build/
+.vercel/
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.sqlite3
+*.db
+assistant.db
+
+# OS / Editor Files
+.DS_Store
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# User Exclusions
+client_secret_*.json
+implementation_plan/
+docs/
+frontend_temp/
+resume/

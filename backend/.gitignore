@@ -1,0 +1,33 @@
+# Environments
+.env
+.env.*
+!.env.example
+venv/
+env/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Databases
+*.db
+*.sqlite3
+assistant.db
+
+# Vector DB / Local Data
+data/
+vector_store.json
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+tmp_basetemp/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store

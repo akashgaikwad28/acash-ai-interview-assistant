@@ -1,0 +1,55 @@
+# Render.com deployment configuration for the FastAPI backend
+# This file tells Render how to build and run your backend service.
+
+services:
+  - type: web
+    name: acash-ai-interview-assistant-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: false
+      - key: APP_NAME
+        value: Acash AI Interview Assistant
+      - key: APP_VERSION
+        value: 1.0.0
+      - key: API_V1_PREFIX
+        value: /api/v1
+      - key: LOG_LEVEL
+        value: INFO
+      # ── Fill these in via Render Dashboard -> Environment ──
+      - key: FRONTEND_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: GEMINI_EMBEDDING_MODEL
+        value: gemini-embedding-2
+      - key: MONGODB_URI
+        sync: false
+      - key: GOOGLE_CALENDAR_ID
+        sync: false
+      - key: GOOGLE_CALENDAR_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CALENDAR_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALENDAR_REFRESH_TOKEN
+        sync: false
+      - key: GOOGLE_CALENDAR_TIMEZONE
+        value: Asia/Kolkata
+      - key: VAPI_API_KEY
+        sync: false
+      - key: VAPI_SECRET_TOKEN
+        sync: false
