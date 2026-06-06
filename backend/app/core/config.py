@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
 
     frontend_url: str = "http://localhost:3000"
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    cors_origins: str | list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
 
     secret_key: str = "dev-secret-key"
     admin_token: str = "dev-admin-token"
