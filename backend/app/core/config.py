@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
 
     frontend_url: str = "http://localhost:3000"
-    cors_origins: str | list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
+    cors_origins: str = "http://localhost:3000"
 
     secret_key: str = "dev-secret-key"
     admin_token: str = "dev-admin-token"
@@ -73,14 +73,7 @@ class Settings(BaseSettings):
             normalized = f"/{normalized}"
         return normalized.rstrip("/")
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, value: str | list[str]) -> list[str]:
-        """Parse comma-separated CORS origins from environment variables."""
 
-        if isinstance(value, str):
-            return [origin.strip() for origin in value.split(",") if origin.strip()]
-        return value
 
     @model_validator(mode="after")
     def validate_production_secrets(self) -> "Settings":
