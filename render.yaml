@@ -37,6 +37,10 @@ services:
         value: gemini-2.5-flash
       - key: GEMINI_EMBEDDING_MODEL
         value: gemini-embedding-2
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
       - key: MONGODB_URI
         sync: false
       - key: GOOGLE_CALENDAR_ID

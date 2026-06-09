@@ -1,12 +1,14 @@
-"""Gemini text-generation service.
+"""Gemini text-generation service with Groq fallback.
 
 Purpose:
-    Call Gemini 2.5 Flash for grounded answer generation.
+    Call Gemini 2.5 Flash for grounded answer generation, with automatic
+    fallback to Groq (Llama 3.3 70B) when Gemini is rate-limited or
+    unavailable, and a final local extractive fallback for offline use.
 Responsibilities:
-    Use google-genai when configured and provide a deterministic local fallback
-    for tests and offline development.
+    Use google-genai as the primary provider, groq SDK as the secondary
+    provider, and a deterministic local fallback for tests/offline.
 Dependencies:
-    Optional google-genai SDK and retrieved RAG contexts.
+    Optional google-genai SDK, optional groq SDK, and retrieved RAG contexts.
 Usage:
     answer = GeminiService(settings).generate_grounded_answer(prompt, contexts, query)
 """
@@ -17,11 +19,12 @@ from app.utils.logger import log_json
 
 
 class GeminiService:
-    """Gemini 2.5 Flash adapter with an offline grounded fallback."""
+    """Gemini 2.5 Flash adapter with Groq and offline grounded fallbacks."""
 
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
-        self._client = None
+        self._gemini_client = None
+        self._groq_client = None
 
     def generate_grounded_answer(
         self,
@@ -29,17 +32,29 @@ class GeminiService:
         contexts: list[RetrievedChunk],
         user_query: str,
     ) -> str:
-        """Generate an answer grounded in retrieved contexts."""
+        """Generate an answer grounded in retrieved contexts.
+
+        Fallback chain: Gemini → Groq → Local extractive answer.
+        """
 
         if not contexts:
             return "I don't have that information in my database."
 
+        # --- Primary: Gemini ---
         if self._settings.gemini_api_key:
             try:
                 return self._generate_with_gemini(prompt)
             except Exception as exc:  # pragma: no cover - external API safety net
                 log_json(30, "gemini_generation_fallback", error=repr(exc))
 
+        # --- Secondary: Groq ---
+        if self._settings.groq_api_key:
+            try:
+                return self._generate_with_groq(prompt)
+            except Exception as exc:  # pragma: no cover - external API safety net
+                log_json(30, "groq_generation_fallback", error=repr(exc))
+
+        # --- Tertiary: Local extractive answer ---
         return self._generate_local_answer(contexts, user_query)
 
     def _generate_with_gemini(self, prompt: str) -> str:
@@ -47,13 +62,35 @@ class GeminiService:
 
         from google import genai  # type: ignore
 
-        if self._client is None:
-            self._client = genai.Client(api_key=self._settings.gemini_api_key)
-        response = self._client.models.generate_content(
+        if self._gemini_client is None:
+            self._gemini_client = genai.Client(api_key=self._settings.gemini_api_key)
+        response = self._gemini_client.models.generate_content(
             model=self._settings.gemini_model,
             contents=prompt,
         )
         return str(response.text or "").strip() or "I don't have that information in my database."
+
+    def _generate_with_groq(self, prompt: str) -> str:
+        """Call Groq via the groq SDK as a fallback provider."""
+
+        from groq import Groq  # type: ignore
+
+        if self._groq_client is None:
+            self._groq_client = Groq(api_key=self._settings.groq_api_key)
+
+        log_json(20, "groq_generation_attempt", model=self._settings.groq_model)
+
+        chat_completion = self._groq_client.chat.completions.create(
+            model=self._settings.groq_model,
+            messages=[
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.7,
+            max_tokens=2048,
+        )
+
+        result = chat_completion.choices[0].message.content
+        return str(result or "").strip() or "I don't have that information in my database."
 
     def _generate_local_answer(self, contexts: list[RetrievedChunk], user_query: str) -> str:
         """Compose a concise extractive answer from retrieved structured chunks."""

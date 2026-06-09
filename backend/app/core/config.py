@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-2.5-flash"
     gemini_embedding_model: str = "gemini-embedding-2"
 
+    groq_api_key: str | None = None
+    groq_model: str = "llama-3.3-70b-versatile"
+
     chromadb_host: str = "localhost"
     chromadb_port: int = 8001
 
